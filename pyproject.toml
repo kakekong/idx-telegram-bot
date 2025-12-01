@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "idx-telegram-bot"
+version = "1.0.0"
+description = "15-min volume-breakout alerts for IDX via Telegram"
+authors = ["you"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+telebot = "^0.0.5"
+playwright = "^1.40.0"
+python-dotenv = "^1.0.0"
+fastapi = "^0.104.0"
+uvicorn = "^0.24.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
