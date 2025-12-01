@@ -1,14 +1,35 @@
-import os, dotenv, threading
-# 1. load .env BEFORE any local import that needs TOKEN
-dotenv.load_dotenv()
+import os
+from dotenv import load_dotenv
+from telebot import TeleBot
 
-from fastapi import FastAPI
-from telegrambot import bot_poll
-from tradingview import run_scheduler
+# Load environment variables
+load_dotenv()
 
-app = FastAPI()   # kept for future webhook use
+# Initialize the Telegram bot
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+bot = TeleBot(TOKEN)
 
-if __name__ == "__main__":
-    # 2. start services
-    threading.Thread(target=bot_poll, daemon=True).start()
-    run_scheduler()          # blocking – runs 15-min scanner
+# Define command handlers
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    bot.reply_to(message, "Welcome to my bot! Type /help for help.")
+
+@bot.message_handler(commands=['add'])
+def add_stock(message):
+    bot.reply_to(message, "Stock added!")
+
+@bot.message_handler(commands=['remove'])
+def remove_stock(message):
+    bot.reply_to(message, "Stock removed!")
+
+@bot.message_handler(commands=['list'])
+def list_stocks(message):
+    bot.reply_to(message, "Current stocks")
+
+@bot.message_handler(commands=['help'])
+def send_help(message):
+    bot.reply_to(message, "Help message")
+
+# Start polling for incoming messages
+bot.polling()
