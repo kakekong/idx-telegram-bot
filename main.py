@@ -1,35 +1,36 @@
-import os
-from dotenv import load_dotenv
-from telebot import TeleBot
+import http.server
+import json
+import logging
+import socketserver
 
-# Load environment variables
-load_dotenv()
+PORT = 8000
 
-# Initialize the Telegram bot
-TOKEN = os.getenv("TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-bot = TeleBot(TOKEN)
+class WebhookHandler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        # Read content length
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length)
 
-# Define command handlers
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, "Welcome to my bot! Type /help for help.")
+        try:
+            payload = json.loads(body)
+            print("Received Payload:")
+            print(json.dumps(payload, indent=2))
+        except json.JSONDecodeError:
+            print("Received non-JSON:")
+            print(body.decode())
 
-@bot.message_handler(commands=['add'])
-def add_stock(message):
-    bot.reply_to(message, "Stock added!")
+        # Response
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({"status": "ok"}).encode())
 
-@bot.message_handler(commands=['remove'])
-def remove_stock(message):
-    bot.reply_to(message, "Stock removed!")
+    def log_message(self, format, *args):
+        return  # Disable noisy logs
 
-@bot.message_handler(commands=['list'])
-def list_stocks(message):
-    bot.reply_to(message, "Current stocks")
 
-@bot.message_handler(commands=['help'])
-def send_help(message):
-    bot.reply_to(message, "Help message")
-
-# Start polling for incoming messages
-bot.polling()
+if __name__ == "__main__":
+    print(f"Starting webhook listener on port {PORT}...")
+    with socketserver.TCPServer(("", PORT), WebhookHandler) as httpd:
+        print("Webhook server running. Waiting for POST requests...")
+        httpd.serve_forever()
