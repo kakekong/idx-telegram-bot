@@ -1,12 +1,14 @@
-import os, threading
+import os, dotenv, threading
+# 1. load .env BEFORE any local import that needs TOKEN
+dotenv.load_dotenv()
+
 from fastapi import FastAPI
 from telegrambot import bot_poll
-from tradingview import run_scheduler   # free scanner
+from tradingview import run_scheduler
 
-app = FastAPI()   # kept for future use
+app = FastAPI()   # kept for future webhook use
 
 if __name__ == "__main__":
-    # 1. telegram bot (non-blocking)
+    # 2. start services
     threading.Thread(target=bot_poll, daemon=True).start()
-    # 2. 15-min scanner (blocking, runs forever)
-    run_scheduler()
+    run_scheduler()          # blocking – runs 15-min scanner
